@@ -1,0 +1,53 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'python manage.py runserver 0.0.0.0:8000'
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/app
+    depends_on:
+#      - rabbitmq
+      - db #This means db should run first, then the backend.
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      DJANGO_SETTINGS_MODULE: admin.settings
+
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'python consumer.py'
+    depends_on:
+      - db
+      - backend
+    environment:
+      DJANGO_SETTINGS_MODULE: admin.settings
+
+  db:l
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: admin
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - 33066:3306 #Difference in ports because it could conflict with MYSQL installation.
+#
+#  rabbitmq:
+#    image: rabbitmq:management
+#    container_name: rabbitmq
+#    ports:
+#      - "5672:5672"  # For AMQP protocol (your application will use this)
+#      - "15672:15672"  # For RabbitMQ management UI
+#    environment:
+#      RABBITMQ_DEFAULT_USER: guest  # Default username
+#      RABBITMQ_DEFAULT_PASS: guest  # Default password
+
+volumes:
+  dbdata:
