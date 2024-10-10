@@ -28,7 +28,7 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: admin.settings
 
-  db:l
+  db:
     image: mysql:8.0
     restart: always
     environment:
